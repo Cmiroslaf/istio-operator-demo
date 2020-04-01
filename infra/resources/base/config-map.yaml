@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: todo-config-map
+  namespace: todo-list
+data:
+  POSTGRES_USER: miro
+  POSTGRES_PASSWORD: Heslo123
+  POSTGRES_DB: todo

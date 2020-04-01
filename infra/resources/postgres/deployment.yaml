@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: database
+spec:
+  selector:
+    matchLabels:
+      app: database
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: database
+    spec:
+      containers:
+      - name: database
+        image: postgres
+        envFrom:
+        - configMapRef:
+            name: todo-config-map
+        volumeMounts:
+        - name: postgres-persistent-storage
+          mountPath: /var/lib/postgresql
+      volumes:
+      - name: postgres-persistent-storage
+        persistentVolumeClaim:
+          claimName: database-persistent-claim

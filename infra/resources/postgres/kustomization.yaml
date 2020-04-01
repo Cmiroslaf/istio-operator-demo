@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: todo-list
+resources:
+- deployment.yaml
+- service.yaml
+- volume-claim.yml
+commonLabels:
+  sidecar.istio.io/inject: "true"
