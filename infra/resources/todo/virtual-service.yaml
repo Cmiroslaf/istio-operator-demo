@@ -1,22 +1,22 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: todo
+  name: todo-vsvc
 spec:
   hosts:
-  - 'localhost'
+  - '*'
   gateways:
   - todo-gateway
   http:
   - name: "todo-routes"
     match:
     - uri:
-        prefix: /todo
+        prefix: /
     route:
     - destination:
         port:
           number: 8080
-        host: todo
+        host: todo-svc.todo-list.svc.cluster.local
 #      corsPolicy:
 #        allowOrigin:
 #        - "*"

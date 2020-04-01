@@ -1,0 +1,17 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  namespace: istio-system
+  name: example-istiocontrolplane
+spec:
+  profile: demo
+  components:
+    ingressGateways:
+    - enabled: true
+      k8s:
+        service:
+          ports:
+          - port: 8080
+            targetPort: 8080
+            name: http
+      name: istio-ingressgateway
