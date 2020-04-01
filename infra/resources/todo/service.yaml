@@ -5,7 +5,7 @@ metadata:
   labels:
     app: todo
 spec:
-  type: NodePort
+  type: LoadBalancer
   ports:
   - port: 8080
     protocol: TCP
