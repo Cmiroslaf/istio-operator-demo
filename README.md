@@ -13,6 +13,14 @@ make kind.create
 make istioctl.init
 ```
 
+Note that after istioctl applies the configurations it will take a while
+for operator to install all necessary components. You can check the status
+of istio-system pods using:
+
+```bash
+kubectl get pods -n istio-system -w
+```
+
 ## How to deploy
 
 To deploy this project using kubectl with building and pushing docker images 

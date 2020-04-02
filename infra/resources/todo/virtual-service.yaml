@@ -18,7 +18,7 @@ spec:
         host: todo.default.svc.cluster.local
 #      corsPolicy:
 #        allowOrigin:
-#        - "*",.
+#        - "*"
 #        allowMethods:
 #        - POST
 #        - GET
