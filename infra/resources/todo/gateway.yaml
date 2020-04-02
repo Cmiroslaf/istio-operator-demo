@@ -1,7 +1,7 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: todo-gateway
+  name: todo
 spec:
   selector:
     istio: todo-ingressgateway

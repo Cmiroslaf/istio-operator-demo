@@ -6,12 +6,12 @@ spec:
   hosts:
   - 'todo'
   gateways:
-  - todo-ingressgateway
+  - istio-system/todo-ingressgateway
   http:
   - route:
     - match:
       - uri:
-          prefix: "/"
+          prefix: "/todo"
       destination:
         port:
           number: 8080
