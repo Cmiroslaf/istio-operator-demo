@@ -4,7 +4,7 @@ RESOURCES_DIR=$(INFRA_DIR)/resources
 OVERLAYS_DIR=$(INFRA_DIR)/overlays
 K8S_DASHBOARD_TOKEN=$(kubectl get secrets -o jsonpath="{.items[?(@.metadata.annotations['kubernetes\.io/service-account\.name']=='default')].data.token}"|base64 -d)
 
-.DEFAULT_GOAL:=serve
+.DEFAULT_GOAL:=kubectl.serve
 kubectl.serve: kubectl.serve.istio
 
 kubectl.serve.istio:
