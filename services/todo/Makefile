@@ -1,5 +1,5 @@
-docker.build/v%:
-	docker build -t localhost:5000/todo:v$* .
+docker.build/%:
+	docker build -t localhost:5000/todo:$* .
 
-docker.push/v%:
-	docker push localhost:5000/todo:v$*
+docker.push/%:
+	docker push localhost:5000/todo:$*
