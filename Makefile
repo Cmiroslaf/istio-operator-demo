@@ -2,7 +2,7 @@ SHELL=/bin/bash
 INFRA_DIR=$(CURDIR)/infra
 RESOURCES_DIR=$(INFRA_DIR)/resources
 OVERLAYS_DIR=$(INFRA_DIR)/overlays
-K8S_DASHBOARD_TOKEN=$(kubectl get secrets -o jsonpath="{.items[?(@.metadata.annotations['kubernetes\.io/service-account\.name']=='default')].data.token}"|base64 -d)
+K8S_DASHBOARD_TOKEN=$(shell kubectl get secrets -o jsonpath="{.items[?(@.metadata.annotations['kubernetes\.io/service-account\.name']=='default')].data.token}"|base64 -d)
 
 .DEFAULT_GOAL:=kubectl.serve
 kubectl.serve: kubectl.serve.istio
@@ -12,6 +12,11 @@ kubectl.serve.istio:
 
 kubectl.serve.service:
 	kubectl port-forward service/todo 8080:8080
+
+kubectl.serve.dashboard:
+	@echo "To log into the Kubernetes Dashboard, use this token: $(K8S_DASHBOARD_TOKEN)"
+	@echo "http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/"
+	kubectl proxy
 
 kubectl.deploy/%: docker.push/%
 	$(if $(shell cat $(RESOURCES_DIR)/kustomization.yaml \
@@ -24,15 +29,11 @@ kubectl.deploy/%: docker.push/%
 	kubectl apply -k $(OVERLAYS_DIR)/local
 	make istioctl.inject
 
-kubectl.dashboard:
-	@echo "To log into the Kubernetes Dashboard, use this token: $${K8S_DASHBOARD_TOKEN}"
-	kubectl proxy
-
 docker.push/%: docker.build/%
-	make -C $(CURDIR)/services/todo docker.push/v$*
+	make -C $(CURDIR)/services/todo docker.push/$*
 
 docker.build/%:
-	make -C $(CURDIR)/services/todo docker.build/v$*
+	make -C $(CURDIR)/services/todo docker.build/$*
 
 istioctl.init:
 	istioctl operator init
