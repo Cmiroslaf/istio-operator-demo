@@ -4,8 +4,8 @@
 
 This small project is using KinD and istioctl, so you need to install them first:
 
-https://kind.sigs.k8s.io/docs/user/quick-start/
-https://istio.io/docs/ops/diagnostic-tools/istioctl/
+- https://kind.sigs.k8s.io/docs/user/quick-start/
+- https://istio.io/docs/ops/diagnostic-tools/istioctl/
 
 After that you can initialize cluster for Todo project:
 ```bash
