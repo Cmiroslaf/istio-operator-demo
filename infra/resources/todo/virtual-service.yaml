@@ -4,22 +4,21 @@ metadata:
   name: todo-vsvc
 spec:
   hosts:
-  - '*'
+  - 'todo'
   gateways:
-  - todo-gateway
+  - todo-ingressgateway
   http:
-  - name: "todo-routes"
-    match:
-    - uri:
-        prefix: /
-    route:
-    - destination:
+  - route:
+    - match:
+      - uri:
+          prefix: "/"
+      destination:
         port:
           number: 8080
-        host: todo-svc.todo-list.svc.cluster.local
+        host: todo
 #      corsPolicy:
 #        allowOrigin:
-#        - "*"
+#        - "*",.
 #        allowMethods:
 #        - POST
 #        - GET

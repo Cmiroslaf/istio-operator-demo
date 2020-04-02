@@ -1,18 +1,28 @@
 SHELL=/bin/bash
 INFRA_DIR=$(CURDIR)/infra
 RESOURCES_DIR=$(INFRA_DIR)/resources
-K8S_DASHBOARD_TOKEN=$(kubectl get secrets -o jsonpath="{.items[?(@.metadata.annotations['kubernetes\.io/service-account\.name']=='default')].data.token}"|base64 -d) \
+OVERLAYS_DIR=$(INFRA_DIR)/overlays
+K8S_DASHBOARD_TOKEN=$(kubectl get secrets -o jsonpath="{.items[?(@.metadata.annotations['kubernetes\.io/service-account\.name']=='default')].data.token}"|base64 -d)
 
+.DEFAULT_GOAL:=serve
+kubectl.serve: kubectl.serve.istio
+
+kubectl.serve.istio:
+	kubectl port-forward -n istio-system service/todo-ingressgateway 8080:8080
+
+kubectl.serve.service:
+	kubectl port-forward service/todo 8080:8080
 
 kubectl.deploy/v%: docker.push/v%
 	$(if $(shell cat $(RESOURCES_DIR)/kustomization.yaml \
 	               | grep v$*)\
 	, \
 	, pushd $(RESOURCES_DIR)/todo; \
-	    kustomize edit set image localhost:5000/todo=localhost:5000/todo:v$*; \
+	      kustomize edit set image localhost:5000/todo=localhost:5000/todo:v$*; \
 	  popd; \
 	)
-	kubectl apply -k $(RESOURCES_DIR)
+	kubectl apply -k $(OVERLAYS_DIR)/local
+	make istioctl.inject
 
 kubectl.dashboard:
 	@echo "To log into the Kubernetes Dashboard, use this token: $${K8S_DASHBOARD_TOKEN}"
@@ -26,14 +36,13 @@ docker.build/v%:
 
 istioctl.init:
 	istioctl operator init
-	kubectl create ns istio-system
+	- kubectl create ns istio-system
 	kubectl apply -f istio.yaml
 
-istioctl.inject:
-	kubectl get deployment -o yaml -n todo-list todo \
-	  | istioctl kube-inject -f - \
-	  | kubectl apply -f -
-	kubectl get deployment -o yaml -n todo-list postgres \
+istioctl.inject: istioctl.inject.todo istioctl.inject.database
+	@
+istioctl.inject.%:
+	kubectl get deployment -o yaml $* \
 	  | istioctl kube-inject -f - \
 	  | kubectl apply -f -
 
