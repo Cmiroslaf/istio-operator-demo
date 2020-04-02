@@ -13,12 +13,12 @@ kubectl.serve.istio:
 kubectl.serve.service:
 	kubectl port-forward service/todo 8080:8080
 
-kubectl.deploy/v%: docker.push/v%
+kubectl.deploy/%: docker.push/%
 	$(if $(shell cat $(RESOURCES_DIR)/kustomization.yaml \
-	               | grep v$*)\
+	               | grep $*)\
 	, \
 	, pushd $(RESOURCES_DIR)/todo; \
-	      kustomize edit set image localhost:5000/todo=localhost:5000/todo:v$*; \
+	      kustomize edit set image localhost:5000/todo=localhost:5000/todo:$*; \
 	  popd; \
 	)
 	kubectl apply -k $(OVERLAYS_DIR)/local
@@ -28,10 +28,10 @@ kubectl.dashboard:
 	@echo "To log into the Kubernetes Dashboard, use this token: $${K8S_DASHBOARD_TOKEN}"
 	kubectl proxy
 
-docker.push/v%: docker.build/v%
+docker.push/%: docker.build/%
 	make -C $(CURDIR)/services/todo docker.push/v$*
 
-docker.build/v%:
+docker.build/%:
 	make -C $(CURDIR)/services/todo docker.build/v$*
 
 istioctl.init:
@@ -49,7 +49,7 @@ istioctl.inject.%:
 kind.reinit: kind.delete kind.create istioctl.init
 
 kind.create:
-	kind_create_w_dr todo
+	$(SHELL) scripts/kind_create.sh todo
 	kubectl config use-context kind-todo
 	kubectl cluster-info --context kind-todo
 	kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta8/aio/deploy/recommended.yaml
