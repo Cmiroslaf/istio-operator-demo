@@ -19,7 +19,7 @@ kubectl.serve.dashboard:
 	kubectl proxy
 
 kubectl.deploy/%: docker.push/%
-	$(if $(shell cat $(RESOURCES_DIR)/kustomization.yaml \
+	$(if $(shell cat $(RESOURCES_DIR)/todo/kustomization.yaml \
 	               | grep $*)\
 	, \
 	, pushd $(RESOURCES_DIR)/todo; \
