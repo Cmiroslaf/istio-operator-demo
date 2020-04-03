@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: database-svc
+  name: database
   labels:
     app: database
 spec:

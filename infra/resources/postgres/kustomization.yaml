@@ -3,6 +3,6 @@ kind: Kustomization
 resources:
 - deployment.yaml
 - service.yaml
-- volume-claim.yml
+- config-map.yaml
 commonLabels:
   sidecar.istio.io/inject: "true"

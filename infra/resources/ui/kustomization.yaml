@@ -6,6 +6,6 @@ resources:
 commonLabels:
   sidecar.istio.io/inject: "true"
 images:
-- name: localhost:5000/todo
-  newName: localhost:5000/todo
+- name: localhost:5000/ui
+  newName: localhost:5000/ui
   newTag: v675

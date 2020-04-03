@@ -1,22 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: todo
+  name: ui
 spec:
   selector:
     matchLabels:
-      app: todo
+      app: ui
   replicas: 1
   template:
     metadata:
       labels:
-        app: todo
+        app: ui
     spec:
       containers:
-      - name: todo
-        image: localhost:5000/todo:latest
+      - name: ui
+        image: localhost:5000/ui:latest
         ports:
         - containerPort: 8080
-        envFrom:
-        - configMapRef:
-            name: database-config-map

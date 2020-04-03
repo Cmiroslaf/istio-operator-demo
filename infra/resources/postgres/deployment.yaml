@@ -15,13 +15,9 @@ spec:
       containers:
       - name: database
         image: postgres
+        ports:
+        - containerPort: 5432
         envFrom:
         - configMapRef:
-            name: todo-config-map
-        volumeMounts:
-        - name: postgres-persistent-storage
-          mountPath: /var/lib/postgresql
-      volumes:
-      - name: postgres-persistent-storage
-        persistentVolumeClaim:
-          claimName: database-persistent-claim
+            name: database-config-map
+
