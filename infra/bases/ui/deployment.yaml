@@ -16,4 +16,4 @@ spec:
       - name: ui
         image: localhost:5000/ui:latest
         ports:
-        - containerPort: 8080
+        - containerPort: 80

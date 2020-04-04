@@ -1,5 +1,7 @@
+DOCKER_REGISTRY_URL=localhost:5000
+
 docker.build/%:
-	docker build -t localhost:5000/todo:$* .
+	docker build -t $(DOCKER_REGISTRY_URL)/todo:$* .
 
 docker.push/%:
-	docker push localhost:5000/todo:$*
+	docker push $(DOCKER_REGISTRY_URL)/todo:$*

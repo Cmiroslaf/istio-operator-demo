@@ -1,22 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: todo
+  name: database
 spec:
   selector:
     matchLabels:
-      app: todo
+      app: database
   replicas: 1
   template:
     metadata:
       labels:
-        app: todo
+        app: database
     spec:
       containers:
-      - name: todo
-        image: localhost:5000/todo:latest
+      - name: database
+        image: postgres
         ports:
-        - containerPort: 8080
+        - containerPort: 5432
         envFrom:
         - configMapRef:
-            name: database-config-map
+            name: database
+

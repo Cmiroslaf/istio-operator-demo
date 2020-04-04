@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: database-config-map
+  name: database
   labels:
     app: database
 data:
