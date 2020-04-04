@@ -1,2 +1,5 @@
 .garden/
 .idea/
+.terraform/
+terraform.tfstate
+terraform.tfstate.*
