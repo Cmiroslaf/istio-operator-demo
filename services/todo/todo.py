@@ -113,6 +113,29 @@ def create_item(lid: int):
     return flask.make_response(flask.jsonify(response), 201)
 
 
+@app.route('/list', methods=['GET'])
+@debug
+def get_lists(lid: int):
+    session = Session()
+
+    lists = session.query(List).all()
+    response = flask.jsonify([{
+        'id': lst.id,
+        'name': lst.name,
+        'items': [
+            {
+                'id': item.id,
+                'content': item.content,
+                'fk_list': item.fk_list
+            }
+            for item in lst.items
+        ],
+    } for lst in lists])
+
+    session.close()
+    return flask.make_response(response, 200)
+
+
 @app.route('/list/<lid>/item', methods=['GET'])
 @debug
 def get_items(lid: int):

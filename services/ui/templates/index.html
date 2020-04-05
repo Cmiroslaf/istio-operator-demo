@@ -5,6 +5,33 @@
     <title>Todo List</title>
 </head>
 <body>
-    Hello World!
+<form action="{{ URL }}/api/list" method="post">
+    <label for="listname">New list:</label>
+    <br/>
+    <input type="text" id="listname" name="listname"/>
+    <input type="submit" value="Create new list"/>
+</form>
+<hr/>
+(% for list in todo_lists %)
+<hr/>
+<br/><br/>
+<h1>{{ list.name }}</h1>
+<form action="{{ URL }}/api/list/{{ list.id }}/items" method="post">
+    <label for="itemname">New item: </label>
+    <br/>
+    <input type="text" id="itemname" name="itemname"/>
+    <input type="submit" value="Create new item"/>
+</form>
+<table>
+    <tbody>
+    (% for item in list.items %)
+    <tr>
+        <td>{{ item.id }}</td>
+        <td>{{ item.content }}</td>
+    </tr>
+    (% endfor %)
+    </tbody>
+</table>
+(% endfor %)
 </body>
 </html>

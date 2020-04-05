@@ -1,13 +1,14 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+namespace: todo
 
 images:
 - name: gcr.io/miroc-sandbox/todo
   newName: gcr.io/miroc-sandbox/todo
-  newTag: v0.0.3
+  newTag: v0.0.4
 - name: gcr.io/miroc-sandbox/ui
   newName: gcr.io/miroc-sandbox/ui
-  newTag: v0.0.3
+  newTag: v0.0.4
 
 resources:
 - ../bases
