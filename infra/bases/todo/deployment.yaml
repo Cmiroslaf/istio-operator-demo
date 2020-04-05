@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: todo
+  labels:
+    sidecar.istio.io/inject: "true"
 spec:
   selector:
     matchLabels:
@@ -12,11 +14,12 @@ spec:
       labels:
         app: todo
     spec:
+      serviceAccountName: todo-todo
       containers:
       - name: todo
-        image: localhost:5000/todo:latest
+        image: gcr.io/miroc-sandbox/todo
         ports:
-        - containerPort: 80
+        - containerPort: 9080
         envFrom:
         - configMapRef:
             name: database

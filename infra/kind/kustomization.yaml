@@ -1,5 +1,18 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+
+images:
+- name: localhost:5000/todo
+  newName: localhost:5000/todo
+  newTag: v0.0.1
+- name: localhost:5000/ui
+  newName: localhost:5000/ui
+  newTag: v0.0.1
+
 bases:
 - ../bases
 - ./bases
+
+patchesStrategicMerge:
+- ./patches/todo/deployment_changed_image.yaml
+- ./patches/ui/deployment_changed_image.yaml

@@ -1,23 +1,18 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-commonLabels:
-  sidecar.istio.io/inject: "true"
+namespace: todo
 
 resources:
+- namespace.yaml
+
 - ui/deployment.yaml
 - ui/service.yaml
+- ui/serviceaccount.yaml
 
 - todo/deployment.yaml
 - todo/service.yaml
+- todo/serviceaccount.yaml
 
 - postgres/deployment.yaml
 - postgres/service.yaml
 - postgres/config-map.yaml
-
-images:
-- name: localhost:5000/ui
-  newName: localhost:5000/ui
-  newTag: v1.0
-- name: localhost:5000/todo
-  newName: localhost:5000/todo
-  newTag: v1.0

@@ -131,4 +131,4 @@ def get_items(lid: int):
 
 if __name__ == '__main__':
     Base.metadata.create_all(engine)
-    app.run("localhost", "8080")
+    app.run("localhost", "9080")

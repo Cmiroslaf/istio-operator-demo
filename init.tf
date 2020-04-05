@@ -28,7 +28,7 @@ resource "google_container_node_pool" "primary_preemptible_nodes" {
   name = "todo"
   location = "europe-west6-b"
   cluster = google_container_cluster.core.name
-  node_count = 2
+  node_count = 3
 
   node_config {
     preemptible = true
@@ -38,19 +38,8 @@ resource "google_container_node_pool" "primary_preemptible_nodes" {
     oauth_scopes = [
       "https://www.googleapis.com/auth/logging.write",
       "https://www.googleapis.com/auth/monitoring",
+      "https://www.googleapis.com/auth/devstorage.read_only",
     ]
-  }
-  depends_on = [
-    google_container_cluster.core
-  ]
-}
-
-resource "kubernetes_namespace" "default_namespace" {
-  metadata {
-    labels = {
-      istio-injection = "enabled"
-    }
-    name = "default"
   }
   depends_on = [
     google_container_cluster.core
