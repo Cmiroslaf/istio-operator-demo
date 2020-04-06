@@ -3,5 +3,4 @@ requests
 opencensus
 opencensus-ext-flask
 opencensus-ext-requests
-opencensus-ext-sqlalchemy
 opencensus-ext-zipkin

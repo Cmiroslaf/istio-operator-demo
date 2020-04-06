@@ -6,6 +6,11 @@ import os
 import typing
 
 import flask
+import opencensus.ext.flask.flask_middleware
+import opencensus.ext.sqlalchemy.trace
+import opencensus.ext.zipkin.trace_exporter
+import opencensus.trace.samplers
+import opencensus.trace.tracer
 import sqlalchemy as sa
 import sqlalchemy.ext.declarative
 import sqlalchemy.orm
@@ -22,6 +27,19 @@ logger = logging.getLogger()
 
 Session: typing.Type[sa.orm.Session] = typing.cast(typing.Type[sa.orm.Session], sa.orm.sessionmaker(bind=engine))
 Base = sa.ext.declarative.declarative_base()
+
+trace_exporter = opencensus.ext.zipkin.trace_exporter.ZipkinExporter(
+    service_name="Todo",
+    host_name="zipkin.istio-system.svc.cluster.local",
+    port=9411,
+)
+trace_sampler = opencensus.trace.samplers.ProbabilitySampler(1)
+tracer = opencensus.trace.tracer.Tracer(
+    sampler=trace_sampler,
+    exporter=trace_exporter,
+)
+opencensus.ext.sqlalchemy.trace.trace_integration(tracer)
+opencensus.ext.flask.flask_middleware.FlaskMiddleware(app, sampler=trace_sampler, exporter=trace_exporter)
 
 
 class List(Base):
@@ -67,44 +85,21 @@ def debug(fn):
     return wrapper
 
 
-@app.route('/list', methods=['POST'])
-@debug
-def create_list():
-    data = json.loads(flask.request.data)
-    if 'name' not in data:
-        return "Missing required 'name' from input JSON data", 400
+class SessionContext:
+    def __init__(self):
+        self._session = Session()
 
-    session = Session()
+    def __enter__(self):
+        return self._session
 
-    todo_list = List(name=data['name'])
-    session.add(todo_list)
-    session.commit()
-
-    session.refresh(todo_list)
-    response: flask.Response = flask.jsonify({
-        'id': todo_list.id,
-        'name': todo_list.name,
-        'items': []
-    })
-    response.status_code = 201
-
-    session.close()
-    return response
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        try:
+            self._session.commit()
+        finally:
+            self._session.close()
 
 
-@app.route('/list/<lid>/item', methods=['POST'])
-@debug
-def create_item(lid: int):
-    data = json.loads(flask.request.data)
-    if 'content' not in data:
-        return "Missing required 'content' from input JSON data", 400
-
-    session = Session()
-
-    list_ = session.query(List).get(lid)
-    list_.items.append(Item(content=data['content']))
-    session.commit()
-
+def load_lists(session) -> flask.Response:
     response: flask.Response = flask.jsonify([{
         'id': list_.id,
         'name': list_.name,
@@ -118,33 +113,40 @@ def create_item(lid: int):
         ],
     } for list_ in session.query(List)])
     response.status_code = 201
-
-    session.close()
     return response
+
+
+@app.route('/list', methods=['POST'])
+@debug
+def create_list():
+    data = json.loads(flask.request.data)
+    if 'name' not in data:
+        return "Missing required 'name' from input JSON data", 400
+
+    with SessionContext() as session:
+        todo_list = List(name=data['name'])
+        session.add(todo_list)
+        return load_lists(session)
+
+
+@app.route('/list/<lid>/item', methods=['POST'])
+@debug
+def create_item(lid: int):
+    data = json.loads(flask.request.data)
+    if 'content' not in data:
+        return "Missing required 'content' from input JSON data", 400
+
+    with SessionContext() as session:
+        list_ = session.query(List).get(lid)
+        list_.items.append(Item(content=data['content']))
+        return load_lists(session)
 
 
 @app.route('/list', methods=['GET'])
 @debug
 def get_lists():
-    session = Session()
-
-    lists = session.query(List).all()
-    response: flask.Response = flask.jsonify([{
-        'id': lst.id,
-        'name': lst.name,
-        'items': [
-            {
-                'id': item.id,
-                'content': item.content,
-                'fk_list': item.fk_list
-            }
-            for item in lst.items
-        ],
-    } for lst in lists])
-    response.status_code = 200
-
-    session.close()
-    return response
+    with SessionContext() as session:
+        return load_lists(session)
 
 
 if __name__ == '__main__':

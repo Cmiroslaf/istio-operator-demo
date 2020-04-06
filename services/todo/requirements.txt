@@ -1,3 +1,7 @@
 Flask
 sqlalchemy
 psycopg2
+opencensus
+opencensus-ext-flask
+opencensus-ext-sqlalchemy
+opencensus-ext-zipkin

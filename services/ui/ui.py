@@ -4,7 +4,6 @@ import logging
 import flask
 import opencensus.ext.flask.flask_middleware
 import opencensus.ext.requests.trace
-import opencensus.ext.sqlalchemy.trace
 import opencensus.ext.zipkin.trace_exporter
 import opencensus.trace.samplers
 import opencensus.trace.tracer
@@ -26,7 +25,6 @@ tracer = opencensus.trace.tracer.Tracer(
     sampler=trace_sampler,
     exporter=trace_exporter,
 )
-opencensus.ext.sqlalchemy.trace.trace_integration(tracer)
 opencensus.ext.requests.trace.trace_integration(tracer)
 opencensus.ext.flask.flask_middleware.FlaskMiddleware(app, sampler=trace_sampler, exporter=trace_exporter)
 
