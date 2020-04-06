@@ -10,7 +10,7 @@ spec:
   http:
   - match:
     - uri:
-        exact: /ui
+        prefix: /ui
     rewrite:
       uri: /
     route:

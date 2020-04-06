@@ -11,15 +11,17 @@ import sqlalchemy.ext.declarative
 import sqlalchemy.orm
 
 app = flask.Flask(__name__)
+
 db_url = 'postgresql://{usr}:{pswd}@database:5432/{db}'.format(
     usr=os.getenv("POSTGRES_USER"),
     pswd=os.getenv("POSTGRES_PASSWORD"),
     db=os.getenv("POSTGRES_DB")
 )
 engine = sa.create_engine(db_url)
-Base = sa.ext.declarative.declarative_base()
-Session: typing.Type[sa.orm.Session] = typing.cast(typing.Type[sa.orm.Session], sa.orm.sessionmaker(bind=engine))
 logger = logging.getLogger()
+
+Session: typing.Type[sa.orm.Session] = typing.cast(typing.Type[sa.orm.Session], sa.orm.sessionmaker(bind=engine))
+Base = sa.ext.declarative.declarative_base()
 
 
 class List(Base):
@@ -58,7 +60,7 @@ def debug(fn):
     def wrapper(*args, **kwargs):
         if flask.request.data:
             logger.error("Handling incoming request: {}".format(json.loads(flask.request.data)))
-        result = fn(*args, **kwargs)
+        result: flask.Response = fn(*args, **kwargs)
         logger.error("Returning: {}".format(result))
         return result
 
@@ -70,7 +72,7 @@ def debug(fn):
 def create_list():
     data = json.loads(flask.request.data)
     if 'name' not in data:
-        return 400, "Missing required 'name' from input JSON data"
+        return "Missing required 'name' from input JSON data", 400
 
     session = Session()
 
@@ -79,13 +81,15 @@ def create_list():
     session.commit()
 
     session.refresh(todo_list)
-    response = {
+    response: flask.Response = flask.jsonify({
         'id': todo_list.id,
         'name': todo_list.name,
-    }
+        'items': []
+    })
+    response.status_code = 201
 
     session.close()
-    return flask.make_response(flask.jsonify(response), 201)
+    return response
 
 
 @app.route('/list/<lid>/item', methods=['POST'])
@@ -93,33 +97,39 @@ def create_list():
 def create_item(lid: int):
     data = json.loads(flask.request.data)
     if 'content' not in data:
-        return 400, "Missing required 'content' from input JSON data"
+        return "Missing required 'content' from input JSON data", 400
 
     session = Session()
 
-    todo_item = Item(content=data['content'])
-    todo_item.fk_list = lid
-    session.add(todo_item)
+    list_ = session.query(List).get(lid)
+    list_.items.append(Item(content=data['content']))
     session.commit()
 
-    session.refresh(todo_item)
-    response = {
-        'id': todo_item.id,
-        'content': todo_item.content,
-        'fk_list': todo_item.fk_list
-    }
+    response: flask.Response = flask.jsonify([{
+        'id': list_.id,
+        'name': list_.name,
+        'items': [
+            {
+                'id': item.id,
+                'content': item.content,
+                'fk_list': item.fk_list
+            }
+            for item in list_.items
+        ],
+    } for list_ in session.query(List)])
+    response.status_code = 201
 
     session.close()
-    return flask.make_response(flask.jsonify(response), 201)
+    return response
 
 
 @app.route('/list', methods=['GET'])
 @debug
-def get_lists(lid: int):
+def get_lists():
     session = Session()
 
     lists = session.query(List).all()
-    response = flask.jsonify([{
+    response: flask.Response = flask.jsonify([{
         'id': lst.id,
         'name': lst.name,
         'items': [
@@ -131,25 +141,10 @@ def get_lists(lid: int):
             for item in lst.items
         ],
     } for lst in lists])
+    response.status_code = 200
 
     session.close()
-    return flask.make_response(response, 200)
-
-
-@app.route('/list/<lid>/item', methods=['GET'])
-@debug
-def get_items(lid: int):
-    session = Session()
-
-    items = session.query(Item).filter(Item.fk_list == lid).all()
-    response = flask.jsonify([{
-        'id': item.id,
-        'content': item.content,
-        'fk_list': item.fk_list
-    } for item in items])
-
-    session.close()
-    return flask.make_response(response, 200)
+    return response
 
 
 if __name__ == '__main__':

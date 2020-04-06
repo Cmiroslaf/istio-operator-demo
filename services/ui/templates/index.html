@@ -5,33 +5,33 @@
     <title>Todo List</title>
 </head>
 <body>
-<form action="{{ URL }}/api/list" method="post">
-    <label for="listname">New list:</label>
+<form action="/ui/list" method="post">
+    <label for="name">New list:</label>
     <br/>
-    <input type="text" id="listname" name="listname"/>
+    <input type="text" id="name" name="name"/>
     <input type="submit" value="Create new list"/>
 </form>
 <hr/>
-(% for list in todo_lists %)
-<hr/>
-<br/><br/>
-<h1>{{ list.name }}</h1>
-<form action="{{ URL }}/api/list/{{ list.id }}/items" method="post">
-    <label for="itemname">New item: </label>
-    <br/>
-    <input type="text" id="itemname" name="itemname"/>
-    <input type="submit" value="Create new item"/>
-</form>
-<table>
-    <tbody>
-    (% for item in list.items %)
-    <tr>
-        <td>{{ item.id }}</td>
-        <td>{{ item.content }}</td>
-    </tr>
-    (% endfor %)
-    </tbody>
-</table>
-(% endfor %)
+{% for todo_list in todo_lists %}
+    <hr/>
+    <br/><br/>
+    <h1>{{ todo_list['name'] }}</h1>
+    <form action="/ui/list/{{ todo_list['id'] }}/item" method="post">
+        <label for="content">New item: </label>
+        <br/>
+        <input type="text" id="content" name="content"/>
+        <input type="submit" value="Create new item"/>
+    </form>
+    <table>
+        <tbody>
+        {% for todo_item in todo_list['items'] %}
+            <tr>
+                <td>{{ todo_item['id'] }}</td>
+                <td>{{ todo_item['content'] }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endfor %}
 </body>
 </html>

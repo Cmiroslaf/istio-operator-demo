@@ -1,1 +1,7 @@
-Flask==1.1.1
+Flask
+requests
+opencensus
+opencensus-ext-flask
+opencensus-ext-requests
+opencensus-ext-sqlalchemy
+opencensus-ext-zipkin
