@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: todo
+  labels:
+    app: todo
+    sidecar.istio.io/inject: "true"
+spec:
+  serviceAccountName: todo-todo
+  containers:
+  - name: todo-sidecar
+    image: busybox
+    command: ["sleep", "3600"]
+  - name: todo
+    image: gcr.io/miroc-sandbox/todo
+    ports:
+    - containerPort: 9080
+    envFrom:
+    - configMapRef:
+        name: database
+    livenessProbe:
+      httpGet:
+        path: /healthz
+        port: 9080
+      initialDelaySeconds: 3
+      periodSeconds: 3
+    readinessProbe:
+      httpGet:
+        path: /healthz
+        port: 9080
+      initialDelaySeconds: 3
+      periodSeconds: 3
+    resources:
+      requests:
+        cpu: 100m
+        memory: 100Mi
+      limits:
+        cpu: 1
+        memory: 1Gi

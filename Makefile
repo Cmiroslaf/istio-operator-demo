@@ -13,10 +13,13 @@ DEFAULT_OVERLAY=gcloud
 KUBECTL_DASHBOARD_TOKEN=$(shell kubectl get secrets -o jsonpath="{.items[?(@.metadata.annotations['kubernetes\.io/service-account\.name']=='default')].data.token}"|base64 -d)
 
 # KinD local docker image registry
-#DOCKER_REGISTRY_URL=localhost:5000
-DOCKER_REGISTRY_URL=gcr.io/miroc-sandbox
+DOCKER_REGISTRY_URL=localhost:5000
+#DOCKER_REGISTRY_URL=gcr.io/miroc-sandbox
 ##
 ##  \e[1mMain targets\e[0m
+##   \e[34mdeploy/%\e[0m                         - Builds, pushes and deploys whole application to the Kubernetes
+deploy/%: docker.push/% kubectl.deploy/%
+
 ##   \e[34mserve\e[0m                            - Serves the application deployed in Kubernetes using NGINX ingress
 .DEFAULT_GOAL:=serve
 serve: kubectl.serve.nginx
@@ -42,9 +45,13 @@ kubectl.serve.ui:
 kubectl.serve.prometheus:
 	kubectl port-forward -n istio-system service/prometheus 6660:9090
 
-##   \e[34mkubectl.serve.tracing\e[0m            - Serves Prometheus
+##   \e[34mkubectl.serve.tracing\e[0m            - Serves Tracing
 kubectl.serve.tracing:
 	kubectl port-forward -n istio-system service/tracing 6661:80
+
+##   \e[34mkubectl.serve.kiali\e[0m              - Serves Kiali
+kubectl.serve.kiali:
+	kubectl port-forward -n istio-system service/kiali 6662:20001
 
 ##   \e[34mkubectl.serve.dashboard\e[0m          - Serves Kubernetes dashboard
 kubectl.serve.dashboard:
@@ -53,7 +60,7 @@ kubectl.serve.dashboard:
 	kubectl proxy
 
 ##   \e[34mkubectl.deploy/%\e[0m                 - Deploys whole application into the Kubernetes
-kubectl.deploy/%: docker.push/%
+kubectl.deploy/%:
 	set -e; \
 	  pushd $(INFRA_DIR)/$(DEFAULT_OVERLAY); \
 	    kustomize edit set image gcr.io/miroc-sandbox/ui=gcr.io/miroc-sandbox/ui:$*; \
@@ -64,7 +71,9 @@ kubectl.deploy/%: docker.push/%
 	  popd
 	kustomize build $(INFRA_DIR)/$(DEFAULT_OVERLAY) \
 	  | kubectl apply -f -
-	make istioctl.inject
+	if [[ $(DEFAULT_OVERLAY) == "gcloud" ]]; then \
+	    make istioctl.inject; \
+	fi
 ##
 ##  \e[1mDocker targets\e[0m
 ##   \e[34mdocker.push/%\e[0m                    - Pushes built image into the repository with given image tag

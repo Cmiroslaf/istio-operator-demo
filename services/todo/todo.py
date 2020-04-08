@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-import functools
 import json
 import logging
 import os
@@ -17,12 +16,13 @@ import sqlalchemy.orm
 
 app = flask.Flask(__name__)
 
-db_url = 'postgresql://{usr}:{pswd}@database:5432/{db}'.format(
-    usr=os.getenv("POSTGRES_USER"),
-    pswd=os.getenv("POSTGRES_PASSWORD"),
-    db=os.getenv("POSTGRES_DB")
+engine = sa.create_engine(
+    'postgresql://{user}:{password}@database:5432/{db}'.format(
+        user=os.getenv("POSTGRES_USER"),
+        password=os.getenv("POSTGRES_PASSWORD"),
+        db=os.getenv("POSTGRES_DB")
+    )
 )
-engine = sa.create_engine(db_url)
 logger = logging.getLogger()
 
 Session: typing.Type[sa.orm.Session] = typing.cast(typing.Type[sa.orm.Session], sa.orm.sessionmaker(bind=engine))
@@ -73,18 +73,6 @@ class Item(Base):
         }
 
 
-def debug(fn):
-    @functools.wraps(fn)
-    def wrapper(*args, **kwargs):
-        if flask.request.data:
-            logger.error("Handling incoming request: {}".format(json.loads(flask.request.data)))
-        result: flask.Response = fn(*args, **kwargs)
-        logger.error("Returning: {}".format(result))
-        return result
-
-    return wrapper
-
-
 class SessionContext:
     def __init__(self):
         self._session = Session()
@@ -117,7 +105,6 @@ def load_lists(session) -> flask.Response:
 
 
 @app.route('/list', methods=['POST'])
-@debug
 def create_list():
     data = json.loads(flask.request.data)
     if 'name' not in data:
@@ -130,7 +117,6 @@ def create_list():
 
 
 @app.route('/list/<lid>/item', methods=['POST'])
-@debug
 def create_item(lid: int):
     data = json.loads(flask.request.data)
     if 'content' not in data:
@@ -143,10 +129,16 @@ def create_item(lid: int):
 
 
 @app.route('/list', methods=['GET'])
-@debug
 def get_lists():
     with SessionContext() as session:
         return load_lists(session)
+
+
+@app.route('/healthz', methods=['GET'])
+def healthz():
+    response = flask.jsonify({})
+    response.status_code = 200
+    return response
 
 
 if __name__ == '__main__':

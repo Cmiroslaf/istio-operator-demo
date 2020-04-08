@@ -1,0 +1,101 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    sidecar.istio.io/inject: "true"
+  name: ui
+  namespace: todo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ui
+  template:
+    metadata:
+      labels:
+        app: ui
+    spec:
+      containers:
+      - envFrom:
+        - configMapRef:
+            name: database
+        image: localhost:5000/ui:latest
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 9080
+          initialDelaySeconds: 3
+          periodSeconds: 3
+        name: ui
+        ports:
+        - containerPort: 9080
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 9080
+          initialDelaySeconds: 3
+          periodSeconds: 3
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    sidecar.istio.io/inject: "true"
+  name: todo
+  namespace: todo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: todo
+  template:
+    metadata:
+      labels:
+        app: todo
+    spec:
+      containers:
+      - envFrom:
+        - configMapRef:
+            name: database
+        image: localhost:5000/todo:latest
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 9080
+          initialDelaySeconds: 3
+          periodSeconds: 3
+        name: todo
+        ports:
+        - containerPort: 9080
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 9080
+          initialDelaySeconds: 3
+          periodSeconds: 3
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    sidecar.istio.io/inject: "true"
+  name: database
+  namespace: todo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: database
+  template:
+    metadata:
+      labels:
+        app: database
+    spec:
+      containers:
+      - envFrom:
+        - configMapRef:
+            name: database
+        image: postgres
+        name: database
+        ports:
+        - containerPort: 5432

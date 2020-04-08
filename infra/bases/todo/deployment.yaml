@@ -23,3 +23,15 @@ spec:
         envFrom:
         - configMapRef:
             name: database
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 9080
+          initialDelaySeconds: 3
+          periodSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 9080
+          initialDelaySeconds: 3
+          periodSeconds: 3

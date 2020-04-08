@@ -66,5 +66,12 @@ def create_item(lid: int):
     return flask.render_template('index.html', todo_lists=response)
 
 
+@app.route('/healthz', methods=['GET'])
+def healthz():
+    response = flask.jsonify({})
+    response.status_code = 200
+    return response
+
+
 if __name__ == '__main__':
     app.run("localhost", "9080")

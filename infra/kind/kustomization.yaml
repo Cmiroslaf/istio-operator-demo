@@ -3,17 +3,23 @@ kind: Kustomization
 namespace: todo
 
 images:
+- name: gcr.io/miroc-sandbox/todo
+  newName: gcr.io/miroc-sandbox/todo
+  newTag: latest
+- name: gcr.io/miroc-sandbox/ui
+  newName: gcr.io/miroc-sandbox/ui
+  newTag: latest
 - name: localhost:5000/todo
   newName: localhost:5000/todo
-  newTag: v0.0.1
+  newTag: latest
 - name: localhost:5000/ui
   newName: localhost:5000/ui
-  newTag: v0.0.1
+  newTag: latest
 
-bases:
-- ../bases
-- ./bases
 
 patchesStrategicMerge:
 - ./patches/todo/deployment_changed_image.yaml
 - ./patches/ui/deployment_changed_image.yaml
+resources:
+- ../bases
+- ./bases
